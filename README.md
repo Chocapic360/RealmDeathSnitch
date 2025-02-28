@@ -34,7 +34,7 @@ RealmDeathSnitch is a Discord bot that monitors a guild's graveyard and notifies
     Add the following content to keys.env:
     ```
     DISCORD_KEY=your_discord_bot_token
-    GUILD_ID=your_guild_id
+    GUILD_NAME=your_guild_name
     CHANNEL_ID=your_channel_id
     ```
 ### Running with Docker ###
