@@ -35,6 +35,8 @@ async def run_guild_graveyard():
         latest_death = gg.guild_graveyard(guild, 0)
         if latest_death != json.load(open('last death.json')) and latest_death['player-name'] != "Private":
             print("someone died")
+            # Refresh sprite sources when a new death is detected so item renders stay current.
+            imd.Download_Images()
             with open('last death.json', 'w') as f:
                 json.dump(latest_death, f)
             f.close()

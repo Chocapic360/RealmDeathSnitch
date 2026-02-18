@@ -108,12 +108,7 @@ def Download_Images() -> None:
 
         discovered_urls = _discover_sprite_urls(session)
         cached_urls = _load_cached_sprite_urls()
-
-        if discovered_urls:
-            merged_cache = dict(cached_urls)
-            merged_cache.update(discovered_urls)
-            _save_cached_sprite_urls(merged_cache)
-            cached_urls = merged_cache
+        updated_cache = dict(cached_urls)
 
         resolved_urls = {
             "sheets.png": discovered_urls.get(
@@ -127,12 +122,35 @@ def Download_Images() -> None:
         }
 
         for file_name, url in resolved_urls.items():
+            image_path = os.path.join("./images", file_name)
+            previous_url = cached_urls.get(file_name)
+            file_exists = os.path.exists(image_path)
+            url_changed = previous_url != url
+
+            if not file_exists or previous_url is None or url_changed:
+                reason = "missing local file"
+                if previous_url is None:
+                    reason = "no cached URL"
+                elif url_changed:
+                    reason = "URL changed"
+                print(f"Downloading {file_name} ({reason})")
+            else:
+                print(f"Skipping {file_name} (unchanged URL and local file exists)")
+                updated_cache[file_name] = url
+                continue
+
             if file_name not in discovered_urls:
-                print(f"Using fallback URL for {file_name}: {url}")
+                if cached_urls.get(file_name) == url:
+                    print(f"Using cached URL for {file_name}: {url}")
+                else:
+                    print(f"Using fallback URL for {file_name}: {url}")
 
             try:
                 _download_image(session, url, file_name)
+                updated_cache[file_name] = url
             except requests.exceptions.RequestException as e:
                 print(f"Error downloading image: {e}, {file_name}")
             except Exception as e:
                 print(f"An error occurred: {e}, {file_name}")
+
+        _save_cached_sprite_urls(updated_cache)
