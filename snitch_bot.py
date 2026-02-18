@@ -4,6 +4,7 @@ import image_downloader as imd
 import guild_graveyard as gg
 import json
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 from pathlib import Path
 import Realm_image_parser as RIP
@@ -42,8 +43,21 @@ async def run_guild_graveyard():
             f.close()
             RIP.death_image_combiner(latest_death)
             death_image = discord.File("./images/output.png")
-            channel = client.get_channel(int(channel_id))
-            await channel.send(f"**{latest_death['player-name']}** died on **{latest_death['time'].split('T')[0]} at {latest_death['time'].split('T')[1].split('Z')[0]}**\n"
+            channel = bot.get_channel(int(channel_id))
+            death_time = latest_death.get('time', '')
+            if 'T' in death_time:
+                death_date, death_clock = death_time.split('T', 1)
+                death_clock = death_clock.split('Z')[0]
+            else:
+                try:
+                    parsed_time = datetime.fromisoformat(death_time.replace('Z', '+00:00'))
+                    death_date = parsed_time.strftime('%Y-%m-%d')
+                    death_clock = parsed_time.strftime('%H:%M:%S')
+                except ValueError:
+                    death_date = death_time
+                    death_clock = "unknown time"
+
+            await channel.send(f"**{latest_death['player-name']}** died on **{death_date} at {death_clock}**\n"
                                f"**Killed by:** {latest_death['killed_by']}\n**Base Fame:** {latest_death['base_fame']} **Total Fame:** {latest_death['total_fame']}\n"
                                f"**Stats:** {latest_death['stats']}", file=death_image)
             RIP.delete_all_files_in_folder("./itempics")
