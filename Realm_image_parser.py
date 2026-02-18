@@ -26,7 +26,7 @@ def skin_image_parser(x,y,playername):
     os.makedirs("./skinpics", exist_ok=True)
     im1.save(f"./skinpics/{playername}.png")
 
-def image_combiner(death_dict:dict) -> str:
+def death_image_combiner(death_dict:dict):
     template = Image.open("./images/image-template.png")
     skin = Image.open(f"./skinpics/{death_dict['player-name']}.png")
     combined = Image.new('RGBA', (template.width, template.height), (0, 0, 0, 0))
@@ -37,6 +37,19 @@ def image_combiner(death_dict:dict) -> str:
     combined.paste(skin, (6, 7), skin)
     combined.resize((combined.width * 2, combined.height * 2))
     combined.save("./images/output.png")
+
+def character_image_combiner(character_dict:dict, index:int):
+    template = Image.open("./images/image-template.png")
+    # Naming scheme for sin pics is class_index.png
+    skin = Image.open(f"./skinpics/{character_dict['class']}_{index}.png")
+    combined = Image.new('RGBA', (template.width, template.height), (0, 0, 0, 0))
+    combined.paste(template, (0, 0), template)
+    for i in range(len(character_dict['equipment'])):
+        item = Image.open(f"./itempics/{character_dict['equipment'][i]['name']}.png")
+        combined.paste(item, (60 + (45 * i), 12), item)
+    combined.paste(skin, (6, 7), skin)
+    combined.resize((combined.width * 2, combined.height * 2))
+    combined.save("./images/alive_output.png")
 
 def delete_all_files_in_folder(folder_path):
     for filename in os.listdir(folder_path):
