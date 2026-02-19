@@ -14,7 +14,9 @@ import player_characters
 load_dotenv(Path('keys.env'))
 
 intents = discord.Intents.default()
-intents.message_content = True
+# MESSAGE CONTENT is a privileged intent. Keep it opt-in so the bot can run
+# in environments where that intent is not enabled in the Discord developer portal.
+intents.message_content = os.getenv("ENABLE_MESSAGE_CONTENT", "false").lower() == "true"
 bot = commands.Bot(command_prefix='!', intents=intents)
 channel_id = int(os.getenv("CHANNEL_ID"))
 channel = None
@@ -68,6 +70,8 @@ async def run_guild_graveyard():
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
+    if not intents.message_content:
+        print('MESSAGE CONTENT intent is disabled; prefix commands may not be available.')
     bot.loop.create_task(run_guild_graveyard())
 
 @bot.command(name = "characters")
